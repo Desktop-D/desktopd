@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
-    "start": "npm run build && electron ."
+    "start": "npm run prebuild && npm run build && electron ."
   },
   "keywords": [],
   "author": "Fragly",
