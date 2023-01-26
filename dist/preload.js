@@ -34,7 +34,7 @@ const _event = {
     },
     coms: {
         connect: (callback) => { ipcRenderer.on("coms/connect", callback); }
-    }
+    },
 };
 const api = {
     util: _util,

@@ -1,4 +1,9 @@
 import { app, ipcMain, BrowserWindow, screen, App, BrowserView, globalShortcut } from "electron"
+import { AppUpdater, autoUpdater } from "electron-updater"
+
+// AUTO UPDATER
+autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true
 
 // STORAGE
 const processes = new Map()
@@ -6,6 +11,7 @@ const clickwindows = new Map()
 
 let mousePosition: {x: number, y: number} = {x: 0, y: 0}
 let mainWindowRect: Electron.Rectangle = {x: 0, y: 0, width: 0, height: 0}
+let mainWindow: AppWindow | null = null
 
 // CLASSES
 
@@ -194,7 +200,7 @@ function init(): void {
         if (boundsY + height > highestY) { highestY = boundsY + height }
     }
 
-    const mainWindow = new AppWindow("main", {
+    mainWindow = new AppWindow("main", {
         x: smallestX,
         y: smallestY,
 
@@ -207,8 +213,12 @@ function init(): void {
 
     mainWindow.window?.setIgnoreMouseEvents(true, { forward: true })
     mainWindowRect = mainWindow.window?.getBounds()!
+    mainWindow.window?.webContents.openDevTools()
 
     console.log(mainWindowRect)
+
+    autoUpdater.checkForUpdates()
+    mainWindow.window!.webContents.send("coms/connect", {event: "message", message: "checking for updates"})
 }
 
 app.on("ready", init)
@@ -232,3 +242,19 @@ app.on('will-quit', () => {
     // Unregister all shortcuts.
     globalShortcut.unregisterAll()
 })
+
+autoUpdater.on("update-available", async () => {
+    mainWindow?.window?.webContents.send("coms/connect", {event: "message", message: "update available"})
+    let pth = await autoUpdater.downloadUpdate()
+    mainWindow?.window?.webContents.send("coms/connect", {event: "message", message: `downloaded ( ${pth} )`})
+})
+
+autoUpdater.on("update-not-available", () => {
+    mainWindow?.window?.webContents.send("coms/connect", {event: "message", message: "up to date"})
+})
+
+autoUpdater.on("update-downloaded", () => {
+    console.log("downloaded update")
+})
+
+autoUpdater.on("error", (err) => { console.log(`ERROR: ${err}`) })

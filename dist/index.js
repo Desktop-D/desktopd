@@ -1,11 +1,25 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
+const electron_updater_1 = require("electron-updater");
+// AUTO UPDATER
+electron_updater_1.autoUpdater.autoDownload = false;
+electron_updater_1.autoUpdater.autoInstallOnAppQuit = true;
 // STORAGE
 const processes = new Map();
 const clickwindows = new Map();
 let mousePosition = { x: 0, y: 0 };
 let mainWindowRect = { x: 0, y: 0, width: 0, height: 0 };
+let mainWindow = null;
 // CLASSES
 const defaultOptionsAppWindow = {
     width: 400,
@@ -136,7 +150,7 @@ function initiateListeners() {
     });
 }
 function init() {
-    var _a, _b;
+    var _a, _b, _c;
     console.log("ready");
     initiateListeners();
     // create a main window on every monitor
@@ -165,7 +179,7 @@ function init() {
             highestY = boundsY + height;
         }
     }
-    const mainWindow = new AppWindow("main", {
+    mainWindow = new AppWindow("main", {
         x: smallestX,
         y: smallestY,
         minWidth: highestX - smallestX,
@@ -175,7 +189,10 @@ function init() {
     });
     (_a = mainWindow.window) === null || _a === void 0 ? void 0 : _a.setIgnoreMouseEvents(true, { forward: true });
     mainWindowRect = (_b = mainWindow.window) === null || _b === void 0 ? void 0 : _b.getBounds();
+    (_c = mainWindow.window) === null || _c === void 0 ? void 0 : _c.webContents.openDevTools();
     console.log(mainWindowRect);
+    electron_updater_1.autoUpdater.checkForUpdates();
+    mainWindow.window.webContents.send("coms/connect", { event: "message", message: "checking for updates" });
 }
 electron_1.app.on("ready", init);
 electron_1.app.whenReady().then(() => {
@@ -194,3 +211,17 @@ electron_1.app.on('will-quit', () => {
     // Unregister all shortcuts.
     electron_1.globalShortcut.unregisterAll();
 });
+electron_updater_1.autoUpdater.on("update-available", () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    (_a = mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.window) === null || _a === void 0 ? void 0 : _a.webContents.send("coms/connect", { event: "message", message: "update available" });
+    let pth = yield electron_updater_1.autoUpdater.downloadUpdate();
+    (_b = mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.window) === null || _b === void 0 ? void 0 : _b.webContents.send("coms/connect", { event: "message", message: `downloaded ( ${pth} )` });
+}));
+electron_updater_1.autoUpdater.on("update-not-available", () => {
+    var _a;
+    (_a = mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.window) === null || _a === void 0 ? void 0 : _a.webContents.send("coms/connect", { event: "message", message: "up to date" });
+});
+electron_updater_1.autoUpdater.on("update-downloaded", () => {
+    console.log("downloaded update");
+});
+electron_updater_1.autoUpdater.on("error", (err) => { console.log(`ERROR: ${err}`); });

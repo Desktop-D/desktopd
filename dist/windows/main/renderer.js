@@ -9,8 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 console.log("renderer loaded");
+var click_add = " clicks!";
 const title = document.getElementById("title");
-title.innerHTML = "0 clicks";
+const statusEl = document.getElementById("status");
+title.innerHTML = "0" + click_add;
+statusEl.innerHTML = "loaded";
 var clicks = 0;
 var currentKey = "";
 function createButton() {
@@ -28,8 +31,13 @@ api.event.button.down((buttonKey) => {
     }
     api.button.destroy(buttonKey);
     clicks++;
-    title.innerHTML = clicks + " clicks";
+    title.innerHTML = clicks + click_add;
     createButton();
+});
+api.event.coms.connect((event, data) => {
+    if (data.event == "message") {
+        statusEl.innerHTML = data.message;
+    }
 });
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     api.util.log("loaded content");

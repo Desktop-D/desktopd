@@ -2,8 +2,8 @@ console.log("renderer loaded")
 
 var click_add = " clicks!"
 
-const title = document.getElementById("title")!
-const statusEl =document.getElementById("status")!
+const title = document.getElementById("title")
+const statusEl = document.getElementById("status")
 title.innerHTML = "0" + click_add
 statusEl.innerHTML = "loaded"
 
@@ -20,7 +20,7 @@ async function createButton() {
     currentKey = buttonKey
 }
 
-api.event.button.down((buttonKey: string) => {
+api.event.button.down((buttonKey) => {
     if (currentKey != buttonKey) { return }
     
     api.button.destroy(buttonKey)
@@ -31,7 +31,7 @@ api.event.button.down((buttonKey: string) => {
     createButton()
 })
 
-api.event.coms.connect((event: any, data: any) => {
+api.event.coms.connect((event, data) => {
     if (data.event == "message") {
         statusEl.innerHTML = data.message
     }
