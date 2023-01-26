@@ -2,6 +2,8 @@ import { app, ipcMain, BrowserWindow, screen, App, BrowserView, globalShortcut }
 
 // STORAGE
 const processes = new Map()
+const clickwindows = new Map()
+
 let mousePosition: {x: number, y: number} = {x: 0, y: 0}
 let mainWindowRect: Electron.Rectangle = {x: 0, y: 0, width: 0, height: 0}
 
@@ -87,7 +89,7 @@ class AppWindow extends WindowProcess {
 }
 
 class ClickWindow extends WindowProcess {
-    constructor(options: Electron.BrowserWindowConstructorOptions) {
+    constructor(key: string, options: Electron.BrowserWindowConstructorOptions) {
         super()
 
         const finalizedOptions = Object.assign({}, defaultOptionsClickWindow, options)
@@ -95,11 +97,18 @@ class ClickWindow extends WindowProcess {
 
         const window = this.createWindow(`./src/clickwindow/index.html`, finalizedOptions as Electron.BrowserWindowConstructorOptions)
         window.setAlwaysOnTop(true, "screen-saver", 99)
+
+        window.on("ready-to-show", () => {
+            console.log("sending key")
+            window.focus()
+            window.webContents.send("coms/connect", {key: key})
+        })
+       
     }
 }
 
 // PRESET
-let clickWindow: ClickWindow | null = null
+
 
 // FUNCTIONS
 
@@ -107,6 +116,11 @@ function initiateListeners() {
     // logs a message to the console
     ipcMain.on("log", (event: Electron.IpcMainEvent, text: string) => {
         console.log(`${event.processId} -> ${text}`)
+    })
+
+    //
+    ipcMain.handle("window/info", (event) => {
+        return mainWindowRect
     })
 
     // closes the window
@@ -121,19 +135,31 @@ function initiateListeners() {
     })
 
     // tells main process that the mouse is pressed down
-    ipcMain.on("mouse/down", (event: Electron.IpcMainEvent) => {
-        console.log("click")
+    ipcMain.on("mouse/down", (event: Electron.IpcMainEvent, receivedKey: string) => {
+        console.log("click - " + receivedKey)
 
-        if (!clickWindow) { return }
+        for (let [id, window] of processes) {
+            if (!window.window) { return }
+            window.window.send("button/down", receivedKey)
+        }
+    })
 
-        console.log(`Random X: ${Math.random() * mainWindowRect.width - mainWindowRect.x}`)
 
-        clickWindow.destroy()
-        clickWindow = new ClickWindow({
-            x: Math.floor(Math.random() * mainWindowRect.width + mainWindowRect.x),
-            y: Math.floor(Math.random() * mainWindowRect.height + mainWindowRect.y),
-        })
-        console.log(clickWindow.window?.getPosition())
+    ipcMain.handle("button/create", (event, options) => {
+        const key = `${Date.now()}`
+
+        console.log("main key " + key)
+
+        const clickwindow = new ClickWindow(key, options)
+        clickwindows.set(key, clickwindow)
+
+        return key
+    })
+
+    ipcMain.on("button/destroy", (event: Electron.IpcMainEvent, key: string) => {
+        const clickwindow = clickwindows.get(key)
+        if (!clickwindow) { return }
+        clickwindow.destroy()
     })
 }
 
@@ -183,12 +209,6 @@ function init(): void {
     mainWindowRect = mainWindow.window?.getBounds()!
 
     console.log(mainWindowRect)
-
-    clickWindow = new ClickWindow({
-        x: Math.floor(Math.random() * mainWindowRect.width + mainWindowRect.x),
-        y: Math.floor(Math.random() * mainWindowRect.height + mainWindowRect.y),
-    })
-    console.log(clickWindow.window?.getPosition())
 }
 
 app.on("ready", init)

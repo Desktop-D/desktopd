@@ -1,6 +1,9 @@
-api.util.log("loaded")
+var key = document.title
+
+api.event.coms.connect((event: any, data: any) => {
+    key = data.key
+})
 
 window.onmousedown = function() {
-    api.util.log("mouse down")
-    api.mouse.down()
+    api.mouse.down(key)
 }
