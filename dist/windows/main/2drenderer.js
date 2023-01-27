@@ -18,6 +18,7 @@ var clicks = 0;
 var currentKey = "";
 function createButton() {
     return __awaiter(this, void 0, void 0, function* () {
+        api.util.log("created");
         var windowRect = yield api.window.info();
         var x = Math.floor(Math.random() * (windowRect.width - 100) + windowRect.x);
         var y = Math.floor(Math.random() * (windowRect.height - 100) + windowRect.y);
@@ -42,7 +43,7 @@ api.event.coms.connect((event, data) => {
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     api.util.log("loaded content");
     createButton();
-}));
+}), { once: true });
 window.addEventListener("mousemove", (e) => {
     title.style.top = e.y + "px";
     title.style.left = e.x + "px";

@@ -213,7 +213,7 @@ function init(): void {
 
     mainWindow.window?.setIgnoreMouseEvents(true, { forward: true })
     mainWindowRect = mainWindow.window?.getBounds()!
-    mainWindow.window?.webContents.openDevTools()
+    // mainWindow.window?.webContents.openDevTools()
 
     console.log(mainWindowRect)
 

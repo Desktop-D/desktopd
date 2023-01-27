@@ -2,15 +2,18 @@ console.log("renderer loaded")
 
 var click_add = " clicks!"
 
-const title = document.getElementById("title")
-const statusEl = document.getElementById("status")
+const title = document.getElementById("title")!
+const statusEl =document.getElementById("status")!
 title.innerHTML = "0" + click_add
 statusEl.innerHTML = "loaded"
 
 var clicks = 0
 var currentKey = ""
 
+
 async function createButton() {
+    api.util.log("created")
+
     var windowRect = await api.window.info()
 
     var x = Math.floor(Math.random() * (windowRect.width - 100) + windowRect.x)
@@ -20,7 +23,7 @@ async function createButton() {
     currentKey = buttonKey
 }
 
-api.event.button.down((buttonKey) => {
+api.event.button.down((buttonKey: string) => {
     if (currentKey != buttonKey) { return }
     
     api.button.destroy(buttonKey)
@@ -31,7 +34,7 @@ api.event.button.down((buttonKey) => {
     createButton()
 })
 
-api.event.coms.connect((event, data) => {
+api.event.coms.connect((event: any, data: any) => {
     if (data.event == "message") {
         statusEl.innerHTML = data.message
     }
@@ -41,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     api.util.log("loaded content")
 
     createButton()
-})
+}, { once: true })
 
 window.addEventListener("mousemove", (e) => {
     title.style.top = e.y + "px"

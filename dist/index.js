@@ -150,7 +150,7 @@ function initiateListeners() {
     });
 }
 function init() {
-    var _a, _b, _c;
+    var _a, _b;
     console.log("ready");
     initiateListeners();
     // create a main window on every monitor
@@ -189,7 +189,7 @@ function init() {
     });
     (_a = mainWindow.window) === null || _a === void 0 ? void 0 : _a.setIgnoreMouseEvents(true, { forward: true });
     mainWindowRect = (_b = mainWindow.window) === null || _b === void 0 ? void 0 : _b.getBounds();
-    (_c = mainWindow.window) === null || _c === void 0 ? void 0 : _c.webContents.openDevTools();
+    // mainWindow.window?.webContents.openDevTools()
     console.log(mainWindowRect);
     electron_updater_1.autoUpdater.checkForUpdates();
     mainWindow.window.webContents.send("coms/connect", { event: "message", message: "checking for updates" });
