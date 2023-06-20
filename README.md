@@ -1,8 +1,7 @@
 
 # Desktop Domme
 
-Dominates you and your computer
-
+Desktop Domme is a hentai femdom game involving a domme that dominates you and your computer
 
 ## Installation
 
